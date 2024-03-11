@@ -1,0 +1,106 @@
+Program.Sub.ScreenSU.Start
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.iLine.Declare(Long)
+V.Local.sLineVal.Declare(String)
+
+F.Intrinsic.BDF.Load("AUX001","AUX001")
+'searches for the line selected in the bdf
+F.Intrinsic.BDF.SeekRow("AUX001",0,0,V.Passed.000070,V.Local.iLine)
+F.Intrinsic.BDF.ReadRow("AUX001",V.Local.iLine,V.Local.sLineVal)
+Function.Intrinsic.String.Split(V.Local.sLineVal,"|~|",V.Local.sLineVal)
+
+'***********************Correction for receiving by ALD 12/17/2019******************************************************
+V.Local.fQtyOpen.Declare(Float,0.0000)
+V.Local.fQtyInsp.Declare(Float,0.0000)
+V.Local.f11.Declare(Float,0.0000)
+V.Local.f12.Declare(Float,0.0000)
+V.Local.f13.Declare(Float,0.0000)
+V.Local.s11.Declare(String)
+V.Local.s12.Declare(String)
+V.Local.s13.Declare(String)
+
+V.Local.s11.Set(V.Local.sLineVal(11))
+V.Local.s12.Set(V.Local.sLineVal(12))
+V.Local.s13.Set(V.Local.sLineVal(13))
+
+V.Local.f11.Set(V.Local.s11)
+V.Local.f12.Set(V.Local.s12)
+V.Local.f13.Set(V.Local.s13)
+
+'Calculate Open Qty
+F.Intrinsic.Math.Add(V.Local.f11,V.Local.f12,V.Local.fQtyOpen)
+'Calculate In Inspection Qty
+F.Intrinsic.Math.Add(V.Local.f13,V.Passed.000108,V.Local.fQtyInsp)
+
+'V.Local.sText.Declare
+'F.Intrinsic.String.Build("Open qty: {0}, Insp Qty: {1}",V.Local.fQtyOpen,V.Local.fQtyInsp,V.Local.sText)
+'F.Intrinsic.UI.Msgbox(V.Local.sText)
+
+'If recciving to inspection
+F.Intrinsic.Control.If(V.Passed.000106,=,"Y")
+	F.Intrinsic.Control.If(V.Local.fQtyInsp,>,V.Local.fQtyOpen)
+		Function.Intrinsic.UI.Msgbox("You have received more than you have open.")
+		V.Passed.777777.Set(1)
+	F.Intrinsic.Control.EndIf
+	
+'If receiving to inventory
+F.Intrinsic.Control.ElseIf(V.Passed.000106,=,"N")
+	F.Intrinsic.Control.If(V.Passed.000112,>,V.Local.fQtyOpen)
+		Function.Intrinsic.UI.Msgbox("You have received more than you have open.")
+		V.Passed.777777.Set(1)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+'*******************************End of Correction************************************************************
+
+'***********************Correction for receiving by SKC******************************************************
+'F.Intrinsic.Control.If(V.Passed.000106,=,"Y")
+'	F.Intrinsic.Control.If(V.Passed.000108,>,V.Local.sLineVal(12))
+'		Function.Intrinsic.UI.Msgbox("You have received more than you have open.")
+'		V.Passed.777777.Set(1)
+'	F.Intrinsic.Control.EndIf
+'F.Intrinsic.Control.ElseIf(V.Passed.000106,=,"N")
+'	F.Intrinsic.Control.If(V.Passed.000112,>,V.Local.sLineVal(12))
+'		Function.Intrinsic.UI.Msgbox("You have received more than you have open.")
+'		V.Passed.777777.Set(1)
+'	F.Intrinsic.Control.EndIf
+'F.Intrinsic.Control.EndIf
+
+'****************************************************************End of Correction******************************
+
+''if pur qty is greater than open qty display and stop save
+'Function.Intrinsic.Control.If(V.Passed.000112,>,V.Local.sLineVal(12))
+'	Function.Intrinsic.UI.Msgbox("You have received more than you have open.")
+'	V.Passed.777777.Set(1)
+''if pur qty to insp is greater than open qty display and stop save
+'Function.Intrinsic.Control.ElseIf(V.Passed.000108,>,V.Local.sLineVal(12))
+'	Function.Intrinsic.UI.Msgbox("You have received more than you have open.")
+'	V.Passed.777777.Set(1)
+'Function.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_3891_Receiving_Restriction.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	Function.Intrinsic.Control.End
+
+Function.Intrinsic.Control.EndIf
+
+Program.Sub.Main.End
+
+Program.Sub.Comments.Start
+${$0$}$$}$SS1$}$8/10/2015 2:48:21 PM$}$False
+Program.Sub.Comments.End
+
